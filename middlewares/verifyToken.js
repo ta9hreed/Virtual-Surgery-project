@@ -1,56 +1,51 @@
-const jwt = require("jsonwebtoken")
-//verify token 
-function verifyToken(req,res,next){
-    const token = req.headers.token;
+const jwt = require("jsonwebtoken");
+
+function verifytoken(req,res,next){
+    const token =req.headers.token;
     if(token){
         try {
-            const decoded =jwt.verify(token,process.env.JWT_SECRET_KEY);
-            req.user = decoded;
+            const decoded= jwt.verify(token,process.env.JWT_SECRET_KEY);
+            req.user= decoded;
             next();
+
+
         } catch (error) {
-            res.status(401).json({message:"invalid token"})
+            res.status(401).json("invalid token ");
         }
 
-    }else{
-        res.status(401).json({message:"no  token provided"})
+    }
+    else{
+        res.status(401).json("no token provided ");
     }
 
 };
 
 //verifyToken& Authorthize the sergeon
 function verifyTokenAndAuthorization(req,res,next){
-    verifyToken(req,res,()=>{
-        if(req.user.id === req.params.id||req.user.IsAdmin){
+    verifytoken(req,res,()=>{
+        if(req.user.id === req.params.id ||req.user.IsAdmin){
             next();
         }
         else{
-            return res.status(403)
-                .json({msg:"You are not allowed"});
+            res.status(403).json("this is not allowed");
         }
-    });
-};
-/*function verifyTokenAndAdmin(req,res,next){
-    verifyToken(req,res,()=>{
-        if(req.user.IsAdmin){
-            next();
-        }
-        else{
-            return res.status(403)
-                .json({msg:"You are not allowed,only Admin"});
-        }
-    });
-};*/
+})};
+//verifyToken And Admin
 function verifyTokenAndAdmin(req,res,next){
-    verifyToken(req,res,()=>{
+    verifytoken(req,res,()=>{
         if(req.user.IsAdmin){
             next();
-        }else{
-            return res.status(403).json({message:"you are not allowed,only admin allowed"});
         }
-    });
-};
+        else{
+            res.status(403).json("this is not allowed ,only Admin");
+        }
+    })};
+
+
+
+
 module.exports={
-    verifyToken,
+    verifytoken,
     verifyTokenAndAuthorization,
     verifyTokenAndAdmin
 }

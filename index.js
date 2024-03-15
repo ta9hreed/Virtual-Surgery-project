@@ -1,7 +1,7 @@
 const express= require("express");
 const pathpatient=require('./routes/pateint');
 const mriscanpath=require('./routes/MRiScan');
-const LogUserPath =require("./routes/LogUser");
+const LogUserPath =require("./routes/auth");
 const UsersPath =require("./routes/updateUser");
 const password=require("./routes/password");
 const logger= require("./middlewares/logger");

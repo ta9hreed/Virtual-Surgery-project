@@ -111,7 +111,7 @@ const PatientSchema = new mongoose.Schema({
 function validateCreatePatient(obj){
     const schema = joi.object
     ({
-        Sergeon:joi.string() .required(),
+        Sergeon:joi.string().required(),
         FristName:joi.string().min(3).max(200).required(),
         LastName:joi.string().min(3).max(200).required(),
         Age:joi.number().min(0).integer().required(),

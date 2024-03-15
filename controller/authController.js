@@ -1,9 +1,11 @@
-const express=require('express');
-const router= express.Router();
 const asyncHandler = require("express-async-handler");
 const bcrypt =require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const{User,validateLogin,validateRegister,generateToken}=require("../models/usermodel");
+const{User,validateLogin,validateRegister}=require("../models/usermodel");
+
+
+
+
 
 /** 
 @desc Register
@@ -11,7 +13,8 @@ const{User,validateLogin,validateRegister,generateToken}=require("../models/user
 @method POST
 @access Public
 */ 
-router.post("/register",asyncHandler(async(req,res)=>{
+
+module.exports.register=asyncHandler(async(req,res)=>{
     const {error}=validateRegister(req.body);
     if (error) {
     return res.status(400).json({message:error.details[0].message});
@@ -32,7 +35,6 @@ router.post("/register",asyncHandler(async(req,res)=>{
         Gender:req.body.Gender,
         Title:req.body.Title,
         Specialist:req.body.Specialist,
-        IsAdmin:req.body.IsAdmin,
         Password:req.body.Password
 
     });
@@ -41,19 +43,15 @@ router.post("/register",asyncHandler(async(req,res)=>{
     const{Password, ...other}=result._doc;
     res.status(201).json({...other,token});
 
-}));
-
-
-
-
-
+});
 /** 
 @desc Login
 @route /api/auth/Login
 @method POST
 @access Public
 */ 
-router.post("/login",asyncHandler(async(req,res)=>{
+
+module.exports.login=asyncHandler(async(req,res)=>{
     const {error}=validateLogin(req.body);
     if (error) {
     return res.status(400).json({message:error.details[0].message});
@@ -71,7 +69,7 @@ router.post("/login",asyncHandler(async(req,res)=>{
     const{Password, ...other}=user._doc;
     res.status(200).json({...other,token});
 
-}));
+});
 
 
-module.exports=router;
+

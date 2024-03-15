@@ -22,9 +22,12 @@ const MRIScanSchema = new mongoose.Schema({
     },
     Image:
     {
-        type:String,
+        type:Object,
+        default:{
+            url:"",
+            publicId:null,
+        },
         required:true,
-        trim:true,
         
     },
         
@@ -39,7 +42,7 @@ function validateCreateMRIScan(obj){
     ({
         Patient:joi.string().required(),
         ScanDetalies:joi.string().min(3).max(1000).required(),
-        Image:joi.string().required()
+        
     });
     return schema.validate(obj);
 };
@@ -48,7 +51,7 @@ function validateUpdateMRIScan(obj){
     ({  
         Patient:joi.string(),
         ScanDetalies:joi.string().min(3).max(1000),
-        Image:joi.string()
+
     
     });
     return schema.validate(obj);
