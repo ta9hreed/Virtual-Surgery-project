@@ -2,8 +2,7 @@ const mongoose =require('mongoose');
 const joi=require('joi');
 const PatientSchema = new mongoose.Schema({
      // Reference to Patient model
-    Sergeon: 
-    { 
+    user: {
         type : mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required:true
@@ -108,10 +107,11 @@ const PatientSchema = new mongoose.Schema({
 },
 { timestamps:true}
 );
+
 function validateCreatePatient(obj){
     const schema = joi.object
     ({
-        Sergeon:joi.string().required(),
+        
         FristName:joi.string().min(3).max(200).required(),
         LastName:joi.string().min(3).max(200).required(),
         Age:joi.number().min(0).integer().required(),
@@ -123,7 +123,7 @@ function validateCreatePatient(obj){
         TreatmentHistory:joi.string().min(3).max(1000),
         Allergies:joi.string().min(3).max(1000),
         DurationAndProgressionOfSymptoms:joi.string().min(3).max(1000),
-        Diagnose:joi.string().min(3).max(1000),
+        Diagnosis:joi.string().min(3).max(1000),
         MedicalHistory:joi.string().min(3).max(1000),
         Notes:joi.string().min(3).max(1000),
         BiopsyOrPathologyResults:joi.string().min(3).max(1000),
@@ -138,7 +138,7 @@ function validateCreatePatient(obj){
 };
 function validateUpdatePatient(obj){
     const schema=joi.object
-    ({  Sergeon:joi.string(),
+    ({ 
         FristName:joi.string().min(3).max(200),
         LastName:joi.string().min(3).max(200),
         Age:joi.number().min(0).integer(),
@@ -150,7 +150,7 @@ function validateUpdatePatient(obj){
         TreatmentHistory:joi.string().min(3).max(1000),
         Allergies:joi.string().min(3).max(1000),
         DurationAndProgressionOfSymptoms:joi.string().min(3).max(1000),
-        Diagnose:joi.string().min(3).max(1000),
+        Diagnosis:joi.string().min(3).max(1000),
         MedicalHistory:joi.string().min(3).max(1000),
         Notes:joi.string().min(3).max(1000),
         BiopsyOrPathologyResults:joi.string().min(3).max(1000),

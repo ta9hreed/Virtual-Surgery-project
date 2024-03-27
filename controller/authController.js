@@ -1,6 +1,5 @@
 const asyncHandler = require("express-async-handler");
 const bcrypt =require("bcryptjs");
-const jwt = require("jsonwebtoken");
 const{User,validateLogin,validateRegister}=require("../models/usermodel");
 
 
@@ -8,7 +7,7 @@ const{User,validateLogin,validateRegister}=require("../models/usermodel");
 
 
 /** 
-@desc Register
+@desc Register New user
 @route /api/LogUser/register
 @method POST
 @access Public
@@ -25,7 +24,7 @@ module.exports.register=asyncHandler(async(req,res)=>{
 
     }
     const salt = await bcrypt.genSalt(10);
-    req.body.Password= await bcrypt.hash(req.body.Password,salt);
+    const hashedPassword= await bcrypt.hash(req.body.Password,salt);
     user = new User({
         FristName:req.body.FristName,
         LastName: req.body.LastName,
@@ -35,9 +34,10 @@ module.exports.register=asyncHandler(async(req,res)=>{
         Gender:req.body.Gender,
         Title:req.body.Title,
         Specialist:req.body.Specialist,
-        Password:req.body.Password
+        Password:hashedPassword
 
     });
+    //await user.save();
     const result =await user.save();
     const token = user.generateToken();
     const{Password, ...other}=result._doc;

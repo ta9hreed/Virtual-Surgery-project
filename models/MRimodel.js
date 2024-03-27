@@ -9,7 +9,12 @@ const MRIScanSchema = new mongoose.Schema({
         type : mongoose.Schema.Types.ObjectId,
         ref: 'Patient',
         required: true
-
+    },
+    user: 
+    { 
+        type : mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
     },
 
     ScanDetalies:
@@ -49,7 +54,6 @@ function validateCreateMRIScan(obj){
 function validateUpdateMRIScan(obj){
     const schema=joi.object
     ({  
-        Patient:joi.string(),
         ScanDetalies:joi.string().min(3).max(1000),
 
     

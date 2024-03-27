@@ -8,18 +8,21 @@ const UserSchema = new mongoose.Schema({
     FristName:{
         type:String,
         required:true,
+        trim:true,
         minlength :3,
         maxlength:200,
     },
     LastName:{
         type:String,
         required:true,
+        trim:true,
         minlength : 3,
         maxlength:200,
     },
     UserName :{
         type:String,
         required:true,
+        trim:true,
         minlength : 3,
         maxlength:200,
         
@@ -42,18 +45,21 @@ const UserSchema = new mongoose.Schema({
         required:true,
         minlength :4,
         maxlength:6,
+        trim:true
     },
     Title:{
         type:String,
         required:true,
         minlength :3,
         maxlength:200,
+        trim:true
     },
     Specialist:{
         type:String,
         required:true,
         minlength :3,
         maxlength:200,
+        trim:true
     },
     IsAdmin:{
         type:Boolean,
@@ -64,9 +70,34 @@ const UserSchema = new mongoose.Schema({
         type:String,
         required:true,
         minlength :8,
-        maxlength:100,
-    }
-},{timestamps:true});
+
+    },
+    ProfilePhoto:{
+        type:Object,
+        default:{
+            url:"https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460__480.png",
+            publicId:null,
+        }
+    },
+    IsAccountVerified:{//new Add 
+        type:Boolean,
+        default:false
+    },
+},{timestamps:true,
+    toJSON:{virtuals:true}, // Gets virtuals and converts them to regular fields in JSON
+    toObject:{virtuals:true} // Converts back from a JS object to a document on querying
+});
+
+
+//populate Patients that Belongs to this user when he/she get his/her profile
+UserSchema.virtual("Patients",{
+    ref:"Patient", //linking with the model name in lower case
+    localField:"_id",//the field
+    foreignField:"user"//to whichfield in patient model we are linking it to
+    });
+
+
+
 
 //Generate Token
 UserSchema.methods.generateToken = function(){
@@ -81,15 +112,16 @@ UserSchema.methods.generateToken = function(){
 function validateRegister(obj) {
     const schema = joi.object({
         
-        FristName:joi.string().min(3).max(200).required(),
-        LastName:joi.string().min(3).max(200).required(),
-        UserName:joi.string().min(3).max(200).required(),
+        FristName:joi.string().trim().min(3).max(200).required(),
+        LastName:joi.string().trim().min(3).max(200).required(),
+        UserName:joi.string().trim().min(3).max(200).required(),
         Email : joi.string().trim().min(5).max(100).required().email(),
         Age:joi.number().required().min(0),
-        Gender:joi.string().min(4).max(6).required(),
-        Title:joi.string().min(3).max(200).required(),
-        Specialist:joi.string().min(3).max(200).required(),
+        Gender:joi.string().trim().min(4).max(6).required(),
+        Title:joi.string().trim().min(3).max(200).required(),
+        Specialist:joi.string().trim().min(3).max(200).required(),
         IsAdmin:joi.bool(),
+        IsAccountVerified:joi.bool(),
         Password:passwordComplexity().required(),
     });
     return schema.validate(obj);
@@ -98,7 +130,7 @@ function validateRegister(obj) {
 function validateLogin(obj){
     const schema = joi.object({
         Email : joi.string().trim().min(5).max(100).required().email(),
-        Password:joi.string().min(8).max(100).required(),
+        Password:joi.string().min(8).required(),
     });
     return schema.validate(obj);
 };
@@ -122,7 +154,6 @@ function validateUpdate(obj) {
         Gender:joi.string().min(3).max(5),
         Title:joi.string().min(3).max(200),
         Specialist:joi.string().min(3).max(200),
-        IsAdmin:joi.bool(),
         Password:passwordComplexity(),
     });
     return schema.validate(obj);

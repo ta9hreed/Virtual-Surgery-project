@@ -1,8 +1,8 @@
 const express=require('express');
 const router= express.Router();
-const{getAllPatient,getPatientByID,getPatients,updatePatient,addPatient,deletePatients}=require("../controller/pateintController");
-
-
+const{getAllPatient,getPatientByID,countPatients,getPatients,updatePatient,addPatient,deletePatients}=require("../controller/pateintController");
+const validateObjectId=require("../middlewares/validateObjectId");
+const{verifytoken}=require("../middlewares/verifyToken")
 
 
 
@@ -11,12 +11,13 @@ const{getAllPatient,getPatientByID,getPatients,updatePatient,addPatient,deletePa
 router.route( '/' )
     .get(getAllPatient) // get all the data from database
     .get(getPatients)
-    .post(addPatient);
-
+    .post(verifytoken,addPatient);
+    router.route( '/count' )
+    .get(countPatients);
 router.route( '/:id' )
-.get(getPatientByID)
-.put(updatePatient)
-.delete(deletePatients);
+.get(validateObjectId,getPatientByID)
+.put(validateObjectId,verifytoken,updatePatient)
+.delete(validateObjectId,verifytoken,deletePatients);
 
 
 
