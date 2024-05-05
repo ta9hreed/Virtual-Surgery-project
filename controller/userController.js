@@ -139,7 +139,7 @@ module.exports.profilePhotoUpload=asyncHandler(async(req,res)=>{
 
     //4.create 
     const user = await User.findById(req.user.id);
-    if(user.ProfilePhoto.publicId !== null)  {
+    if(user.ProfilePhoto && user.ProfilePhoto.publicId !== null)  {
         await cloudinaryRemoveImage(user.ProfilePhoto.publicId);
     }    
     user.ProfilePhoto={
