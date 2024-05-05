@@ -67,6 +67,7 @@ module.exports.createNewMRI = asyncHandler(async (req, res) => {
     //3.upload photo
     const imagePath = path.join(__dirname, `../images/${req.file.filename}`);
     const result = await cloudinaryUploadImage(imagePath);
+    console.log('Image Path:', imagePath);
     //4.create new MRISCAN
     const scan = await MRIScan.create(
         {
