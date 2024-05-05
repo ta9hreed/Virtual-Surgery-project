@@ -1,8 +1,8 @@
 const asyncHandler = require("express-async-handler");
-const path =require('path');
-const fs=require("fs");
-const{cloudinaryUploadImage,cloudinaryRemoveImage}=require("../utils/cloudinary")
-const{validateCreateMRIScan,validateUpdateMRIScan,MRIScan} = require("../models/MRimodel");
+const path = require('path');
+const fs = require("fs");
+const { cloudinaryUploadImage, cloudinaryRemoveImage } = require("../utils/cloudinary")
+const { validateCreateMRIScan, validateUpdateMRIScan, MRIScan } = require("../models/MRimodel");
 
 /** 
 @desc Get all MRISCAN
@@ -10,20 +10,20 @@ const{validateCreateMRIScan,validateUpdateMRIScan,MRIScan} = require("../models/
 @method GET
 @access Public
 
-*/ 
+*/
 
-module.exports.getAllMRI = asyncHandler(async (req,res) => {
-    const SCAN_PER_PAGE=3;
-    const{pageNumber}= req.query;
+module.exports.getAllMRI = asyncHandler(async (req, res) => {
+    const SCAN_PER_PAGE = 3;
+    const { pageNumber } = req.query;
     let scans;
-    if(pageNumber){
+    if (pageNumber) {
 
-        scans= await MRIScan.find({}).sort().skip((pageNumber -1)*SCAN_PER_PAGE).limit(SCAN_PER_PAGE)
-        .populate("Patient",["_id","FristName","LastName"]);
+        scans = await MRIScan.find({}).sort().skip((pageNumber - 1) * SCAN_PER_PAGE).limit(SCAN_PER_PAGE)
+            .populate("Patient", ["_id", "FristName", "LastName"]);
     }
-    else{
-        scans= await MRIScan.find({}).sort({createdAt:-1})
-        .populate("Patient",["_id","FristName","LastName"]);
+    else {
+        scans = await MRIScan.find({}).sort({ createdAt: -1 })
+            .populate("Patient", ["_id", "FristName", "LastName"]);
     }
 
     res.status(200).json(scans);
@@ -37,13 +37,13 @@ module.exports.getAllMRI = asyncHandler(async (req,res) => {
 @access Public
 
 */
-module.exports. getMRIById =asyncHandler(async(req,res)=>{
+module.exports.getMRIById = asyncHandler(async (req, res) => {
     const scans = await MRIScan.findById(req.params.id).populate("Patient");
-    if(!scans){
-        res.status(404).json({message:'The MRIScan with the given ID was not found.'})
+    if (!scans) {
+        res.status(404).json({ message: 'The MRIScan with the given ID was not found.' })
     }
-    if(req.user.id !== scans.user.toString()){
-        return res.status(403).json({message:'access denied'});
+    if (req.user.id !== scans.user.toString()) {
+        return res.status(403).json({ message: 'access denied' });
     }
     res.status(200).json(scans);
 
@@ -54,34 +54,35 @@ module.exports. getMRIById =asyncHandler(async(req,res)=>{
 @method post
 @access private(only log in user)
 */
-module.exports.createNewMRI = asyncHandler( async (req,res)=>{
+module.exports.createNewMRI = asyncHandler(async (req, res) => {
     //1.validation for image 
-    if(!req.file) {
-    return res.status(400).send('No image  uploaded');
+    if (!req.file) {
+        return res.status(400).send('No image  uploaded');
     }
     //2.validation for data 
-    const {error}=validateCreateMRIScan(req.body);
+    const { error } = validateCreateMRIScan(req.body);
     if (error) {
-    res.status(400).send(error.details[0].message);
+        res.status(400).send(error.details[0].message);
     }
     //3.upload photo
-    const imagePath=path.join(__dirname,`../images/${req.file.filename}`);
+    const imagePath = path.join(__dirname, `../images/${req.file.filename}`);
     const result = await cloudinaryUploadImage(imagePath);
     //4.create new MRISCAN
     const scan = await MRIScan.create(
-        {   user:req.user.id,
-            Patient:req.body.Patient,
-            ScanDetalies:req.body.ScanDetalies,
-            Image:{
-                url:result.secure_url,
-                publicId:result.public_id,
+        {
+            user: req.user.id,
+            Patient: req.body.Patient,
+            ScanDetalies: req.body.ScanDetalies,
+            Image: {
+                url: result.secure_url,
+                publicId: result.public_id,
             }
-        
+
         })
     //5.send response to the client 
-        res.status(201).json(scan);      
+    res.status(201).json(scan);
     //6. remove image from the server
-        fs.unlinkSync(imagePath);
+    //fs.unlinkSync(imagePath);
 
 
 }
@@ -92,27 +93,28 @@ module.exports.createNewMRI = asyncHandler( async (req,res)=>{
 @method put
 @access private only user 
 */
-module.exports.updateMRI=asyncHandler(async(req,res)=> {
+module.exports.updateMRI = asyncHandler(async (req, res) => {
     //1.validation update
-    const {error} = validateUpdateMRIScan(req.body);
+    const { error } = validateUpdateMRIScan(req.body);
 
     if (error) {
-        return res.status(400).json({message: error.details[0].message});
+        return res.status(400).json({ message: error.details[0].message });
     }
     //2.get  MRI by id from database
-    const scan =  await MRIScan.findById(req.params.id);
-    if(!scan){
-        return res.status(404).json({message:'MRI not found'});
+    const scan = await MRIScan.findById(req.params.id);
+    if (!scan) {
+        return res.status(404).json({ message: 'MRI not found' });
     }
-    if(req.user.id !== scan.user.toString()){
-        return res.status(403).json({message:'access denied'});}
+    if (req.user.id !== scan.user.toString()) {
+        return res.status(403).json({ message: 'access denied' });
+    }
 
-    const updateMRI=await MRIScan.findByIdAndUpdate(req.params.id,
+    const updateMRI = await MRIScan.findByIdAndUpdate(req.params.id,
         {
-        $set: {
-            ScanDetalies : req.body.ScanDetalies,
-        }
-    },{ new : true} ).populate('Patient');
+            $set: {
+                ScanDetalies: req.body.ScanDetalies,
+            }
+        }, { new: true }).populate('Patient');
 
     res.status(200).json(updateMRI);
 }
@@ -123,38 +125,38 @@ module.exports.updateMRI=asyncHandler(async(req,res)=> {
 @method put
 @access private
 */
-module.exports.updateMRIImage=asyncHandler(async(req,res)=> {
+module.exports.updateMRIImage = asyncHandler(async (req, res) => {
     //1.validation update
 
     if (!req.file) {
-        return res.status(400).json({message:"no image provided"});
+        return res.status(400).json({ message: "no image provided" });
     }
     //2.get  MRI by id from database
-    const scan =  await MRIScan.findById(req.params.id);
-    if(!scan){
-        return res.status(404).json({message:'MRI not found'});
+    const scan = await MRIScan.findById(req.params.id);
+    if (!scan) {
+        return res.status(404).json({ message: 'MRI not found' });
     }
-    if(req.user.id !== scan.user.toString()){
-        return res.status(403).json({message:'access denied'});
+    if (req.user.id !== scan.user.toString()) {
+        return res.status(403).json({ message: 'access denied' });
     }
 
     //4.delete old mri image
     await cloudinaryRemoveImage(scan.Image.publicId);
     //upload new image
 
-    const imagePath=path.join(__dirname,`../images/${req.file.filename}`);
+    const imagePath = path.join(__dirname, `../images/${req.file.filename}`);
     const result = await cloudinaryUploadImage(imagePath);
     //update image in Db
-    const updateMRI=await MRIScan.findByIdAndUpdate(req.params.id,
+    const updateMRI = await MRIScan.findByIdAndUpdate(req.params.id,
         {
-        $set: {
-            Image:{
-                url:result.secure_url,
-                publicId:result.public_id,
-                
+            $set: {
+                Image: {
+                    url: result.secure_url,
+                    publicId: result.public_id,
+
+                }
             }
-        }
-    },{ new : true} ).populate('Patient');
+        }, { new: true }).populate('Patient');
     res.status(200).json(updateMRI);
     //remov efrom server
     fs.unlinkSync(imagePath);
@@ -167,24 +169,26 @@ module.exports.updateMRIImage=asyncHandler(async(req,res)=> {
 @method delete
 @access privat e only user 
 */
-module.exports.deleteMRI = asyncHandler(async (req,res)=> {
+module.exports.deleteMRI = asyncHandler(async (req, res) => {
 
     const mriscan = await MRIScan.findById(req.params.id);
-    
-        if(!mriscan){
-            
-            res.status(404).json({message:'The MRISCAN with the given ID was not found.'})
-        }
-        if(req.user.id === mriscan.user.toString()){
-            await MRIScan.findByIdAndDelete(req.params.id);
-            await cloudinaryRemoveImage(mriscan.Image.publicId);
-            res.status(200).json({message : 'is delete',
-                    mriscanId: mriscan._id});
-        }
-        else{
-            res.status(403).json({message:"access denied "})
-        }
-    
+
+    if (!mriscan) {
+
+        res.status(404).json({ message: 'The MRISCAN with the given ID was not found.' })
+    }
+    if (req.user.id === mriscan.user.toString()) {
+        await MRIScan.findByIdAndDelete(req.params.id);
+        await cloudinaryRemoveImage(mriscan.Image.publicId);
+        res.status(200).json({
+            message: 'is delete',
+            mriscanId: mriscan._id
+        });
+    }
+    else {
+        res.status(403).json({ message: "access denied " })
+    }
+
 }
 );
 
