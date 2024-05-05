@@ -82,7 +82,7 @@ module.exports.createNewMRI = asyncHandler(async (req, res) => {
     //5.send response to the client 
     res.status(201).json(scan);
     //6. remove image from the server
-    //fs.unlinkSync(imagePath);
+    fs.unlinkSync(imagePath);
 
 
 }
