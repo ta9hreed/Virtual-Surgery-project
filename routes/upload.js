@@ -1,31 +1,44 @@
-const express=require('express');
-const router= express.Router();
-const{Photoupload}=require("../middlewares/photoUpload");
-const asyncHandler = require('async-handler');
-const path = require('path');
+// routes/upload.js
+const express = require('express');
+const router = express.Router();
+const multer = require('multer');
+const cloudinary = require('cloudinary').v2;
+const { compressAndUploadToCloudinary, sendFilesToFlaskAPI, uploadResultToCloudinary } = require("../utils/cloudinary");
+const { upload } = require("../middlewares/upload_nii");
 
+//console.log('Upload Middleware:', upload); // Log to verify the import
 
-// /api/upload
-router.post("/",Photoupload.single("image"),asyncHandler(async(req,res)=>{
-//1.validation
-    if(!req.file){
-        return res.status(400).json({msg:"No file uploaded"});
+router.post("/", upload.array('file'), async (req, res) => {
+    console.log('Request Body:', req.body); // Check the request body
+    console.log('Uploaded Files:', req.files); // Check the uploaded files
+
+    const { files } = req;
+    if (!files || files.length === 0) {
+        return res.status(400).json({ message: 'No files uploaded.' });
     }
-//2.get the path to the image
-    const imagepath= path.join(__dirname,`../images/${req.file.filename}`);
-//3.upload to  cloudinary 
-const result = await cloudinaryUploadImage(imagepath);
-console.log(result);
 
-//4.get the user from Db
-//5.Delete the old image 
-//6.change the image filed in DB
+    // Array to store the URLs of the uploaded files
+    let fileUrls = [];
 
-})
-    
-)
-
-
+    try {
+        // Assuming you're handling multiple files and uploading each of them
+        for (const file of files) {
+            const uploadedFile = await compressAndUploadToCloudinary(file.buffer);
+            fileUrls.push({ public_id: uploadedFile.public_id, secure_url: uploadedFile.secure_url })
+        }
+        sendFilesToFlaskAPI(fileUrls)
+            .then((data) => res.json({ file_urls: fileUrls, results: data }))
+            .catch((err) => reject(err));
 
 
-module.exports=router;
+
+    } catch (error) {
+        console.error('Error during file upload:', error);
+        res.status(500).json({ message: 'File upload failed', error: error.message });
+    }
+});
+
+
+
+
+module.exports = router;

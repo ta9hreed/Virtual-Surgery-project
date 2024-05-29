@@ -1,17 +1,20 @@
-const express= require("express");
-const pathpatient=require('./routes/pateint');
-const mriscanpath=require('./routes/MRiScan');
-const LogUserPath =require("./routes/auth");
-const UsersPath =require("./routes/updateUser");
-const password=require("./routes/password");
-const logger= require("./middlewares/logger");
-const upload=require("./routes/upload");
-const { notFound,errorHandler } = require("./middlewares/error");
+const express = require("express");
+const pathpatient = require('./routes/pateint');
+const mriscanpath = require('./routes/MRiScan');
+const LogUserPath = require("./routes/auth");
+const UsersPath = require("./routes/updateUser");
+const password = require("./routes/password");
+const logger = require("./middlewares/logger");
+const upload = require("./routes/upload");
+const { notFound, errorHandler } = require("./middlewares/error");
 require("dotenv").config();
-const path= require('path');
-const helmet =require("helmet");
-const connectToDB =require("./config/db")
-const cors =require("cors");
+const path = require('path');
+const helmet = require("helmet");
+const connectToDB = require("./config/db")
+const cors = require("cors");
+const morgan = require('morgan');
+const bodyParser = require('body-parser');
+
 //connection ToDB
 connectToDB();
 
@@ -20,31 +23,37 @@ connectToDB();
 const app = express();
 
 //static folder
-app.use(express.static(path.join(__dirname,"images")));
+app.use(express.static(path.join(__dirname, "images")));
 
 //apply middleware 
 app.use(express.json());
-app.use(express.urlencoded({extended:false}));
+app.use(express.urlencoded({ extended: false }));
 app.use(logger);
 //Helmet
 app.use(helmet());
 
 //cors policy 
-app.use (cors());
+app.use(cors());
 
 //set view engine 
-app.set('view engine','ejs');
+app.set('view engine', 'ejs');
+app.use(morgan('dev'));
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+
+// CORS handling
 
 
-app.use("/api/patients",pathpatient);
-app.use("/api/mriscan",mriscanpath);
-app.use("/api/LogUser",LogUserPath);
-app.use("/api/Users",UsersPath);
-app.use('/password',password);//mvc
-app.use('/api/upload',upload);
+
+app.use("/api/patients", pathpatient);
+app.use("/api/mriscan", mriscanpath);
+app.use("/api/LogUser", LogUserPath);
+app.use("/api/Users", UsersPath);
+app.use('/password', password);//mvc
+app.use('/api/files', upload);
 
 //error hanlder middleware
-app.use(notFound );
+app.use(notFound);
 app.use(errorHandler);
 
 
@@ -54,5 +63,5 @@ app.use(errorHandler);
 
 
 //running server
-const PORT = process.env.PORT||8000;
-app.listen(PORT,() => console.log(`server is running in ${process.env.NODE_ENV} on port ${PORT}`));
+const PORT = process.env.PORT || 8000;
+app.listen(PORT, () => console.log(`server is running in ${process.env.NODE_ENV} on port ${PORT}`));
